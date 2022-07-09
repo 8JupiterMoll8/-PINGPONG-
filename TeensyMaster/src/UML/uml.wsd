@@ -1,0 +1,182 @@
+@startuml
+scale 2
+class HitPiezoDetector {
+    - counter :Counter
+    - smoother:Smoother
+    -isHit()
+    -sumHits()
+    -resetSumHits()
+}
+
+class GameManager
+{
+    - ckeckBAallWechsel()
+    - ckeckAufschlag()
+    - checkError()
+    - getTotalBallwechsel()
+
+# virtual void lr_hitAufschlag() = 0;
+# virtual void lt_hitAufschalg() = 0;
+# virtual void rr_hitAufschlag() = 0;
+# virtual void rt_hitAufschlag() = 0;
+
+# virtual void lr_hitBallwechsel() = 0;
+# virtual void lt_hitBallwechsel() = 0;
+# virtual void rr_hitBallwechsel() = 0;
+# virtual void rt_hitBallwechsel() = 0;
+
+# virtual void error()          = 0;
+# virtual void ok_Ballwachsel() = 0;
+
+}
+
+class PingPongManager{}
+GameManager <|-- PingPongManager
+ LeftRacket *-- GameManager
+ LeftTable *-- GameManager
+ RightRacket *-- GameManager
+ RightTable *-- GameManager
+
+class Animation
+{
+
+}
+
+
+
+
+
+
+
+class LedStrip{
+
+}
+
+
+class usbMidi
+{
+
+
+}
+class Table
+{
+    + boolean isHit()
+    + int hitSum()
+    + void resetHitSum()
+
+}
+class LeftTable{
+
+}
+class RightTable{
+
+}
+class Racket
+{
+    + float speed()
+    + float swing_A_Gain()
+    + float swing_B_Gain()
+
+    + boolean isHit()
+    + int isHit()
+    + void resetHitSum()
+
+    + float roll()
+    + float pitch()
+    + float yaw()
+
+    + int pressure()
+
+
+}
+class LeftRacket{}
+class RightRacket{}
+
+
+Racket <|-- LeftRacket
+Racket <|-- RightRacket
+
+Table <|-- LeftTable
+Table <|-- RightTable
+
+class Counter {
+    +start : int
+
+    -add()
+    -reset()
+    -sum()
+
+}
+class PeakDetecor
+{
+    -IsHit()
+
+}
+class Smoother  {
+    -getValue()
+
+}
+
+Mahony *-- Racket
+class Mahony
+{
+    + float roll()
+    + float pitch()
+    + float yaw()
+
+
+}
+Speed *-- Racket
+class Speed
+{
+    + void loop()
+	+ float smooth()
+	+ int setSmoothSensivity(int)
+	+ float getNormal()
+
+}
+Pressure *-- Racket
+
+ReciverData *-- Pressure
+ReciverData *-- Mahony
+ReciverData *-- Speed
+
+LedStrip *-- Comet
+LedStrip *-- Bargraph
+usbMidi *-- Comet 
+usbMidi *-- Bargraph
+
+
+
+class Comet
+{
+
+}
+
+class Bargraph
+{
+
+}
+
+class SwingController{
+
+}
+Comet *-- SwingController
+Bargraph *-- SwingController
+RightRacket *-- SwingController
+
+
+
+
+
+
+HitPiezoDetector *-- Racket
+HitPiezoDetector *-- Table
+Counter *-- HitPiezoDetector
+Smoother *-- HitPiezoDetector
+PeakDetecor *-- HitPiezoDetector
+
+
+
+
+@enduml

@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "TeensyAcLight"
+		},
+		{
+			"path": "TeensyMaster"
+		},
+		{
+			"path": "TeensyMotor"
+		}
+	],
+	"settings": {}
+}

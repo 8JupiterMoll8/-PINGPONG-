@@ -1,0 +1,28 @@
+@startuml
+'https://plantuml.com/state-diagram
+
+
+
+
+state Ballwechsel {
+  [*]--> Set_Direction
+  Set_Direction: if leftRacketHit  == true   direction = links
+  Set_Direction: if rightRacketHit == true   direction = links
+
+  Set_Direction --> Left_Racket :: leftRacketHit = true
+  Set_Direction --> Right_Racket :: rightRacket == true
+  'Aufschlag Links
+  Left_Racket --> Left_Table
+  Left_Table --> Right_Table
+  Right_Table --> Right_Racket
+  'Auschlag Rechts
+  Right_Racket --> Right_Table
+  Right_Table --> Left_Table
+  Left_Table --> Left_Racket
+
+}
+
+
+
+
+@enduml
