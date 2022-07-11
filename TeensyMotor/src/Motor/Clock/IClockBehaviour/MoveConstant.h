@@ -8,8 +8,7 @@ class MoveConstant : public IMoveBehaviour
 {
 
 public:
-  MoveConstant(AccelStepper &Axis) : 
-  IMoveBehaviour(Axis)
+  MoveConstant(AccelStepper &Axis) :  IMoveBehaviour(Axis)
   {
       m_speed = 4000;
   }

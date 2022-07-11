@@ -13,14 +13,14 @@ class Clock
 protected:
 
 //AccelStepper
-    const byte X_STEPPER_STEP_PIN  {3};
-    const byte X_STEPPER_DIR_PIN   {4};
+    const byte X_STEPPER_STEP_PIN  {33};
+    const byte X_STEPPER_DIR_PIN   {34};
 
-    const byte Y_STEPPER_STEP_PIN  {5};
-    const byte Y_STEPPER_DIR_PIN   {6};
+    const byte Y_STEPPER_STEP_PIN  {35};
+    const byte Y_STEPPER_DIR_PIN   {30};
 
-    const byte A_STEPPER_STEP_PIN  {7};
-    const byte A_STEPPER_DIR_PIN   {8};
+    const byte A_STEPPER_STEP_PIN  {32};
+    const byte A_STEPPER_DIR_PIN   {31};
 
     AccelStepper stundenZeiger;
     AccelStepper minutenZeiger;

@@ -6,8 +6,7 @@
 class IMoveBehaviour
 {
 public:
-  IMoveBehaviour(AccelStepper &Axis) : 
-  Zeiger(Axis)
+  IMoveBehaviour(AccelStepper &Axis) : Zeiger(Axis)
   {}
 
   void setup()

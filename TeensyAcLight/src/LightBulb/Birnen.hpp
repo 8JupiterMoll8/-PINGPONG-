@@ -10,11 +10,11 @@ void zero_crosss_int();
 void timerIsr();
 const byte NUM_BULB = 8;
 
-unsigned char channel[NUM_BULB] = {24,25,26,27,28,29,30,31};
+unsigned char channel[NUM_BULB] = {22,3,4,5,17,16,15,14};
 unsigned char CH1, CH2, CH3, CH4, CH5, CH6, CH7, CH8;
 unsigned char CH[8]={CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8};
 
-unsigned char l_channel[NUM_BULB] = {41,40,39,38,37,36,35,34};
+unsigned char l_channel[NUM_BULB] = {40,39,38,37,36,35,34,33};
 unsigned char l_CH1, l_CH2, l_CH3, l_CH4, l_CH5, l_CH6, l_CH7, l_CH8;
 unsigned char l_CH[8]={ l_CH1, l_CH2, l_CH3, l_CH4, l_CH5, l_CH6, l_CH7, l_CH8};
 

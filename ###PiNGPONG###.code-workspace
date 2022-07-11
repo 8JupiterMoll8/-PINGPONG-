@@ -1,9 +1,6 @@
 {
 	"folders": [
 		{
-			"path": "."
-		},
-		{
 			"path": "TeensyAcLight"
 		},
 		{
@@ -11,6 +8,12 @@
 		},
 		{
 			"path": "TeensyMotor"
+		},
+		{
+			"path": "Ic2_recive"
+		},
+		{
+			"path": "Ic2_SEND"
 		}
 	],
 	"settings": {}

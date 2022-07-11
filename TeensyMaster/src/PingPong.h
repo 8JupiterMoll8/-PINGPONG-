@@ -18,6 +18,8 @@
 #include "InputSensorSmooth.hpp"
 #include "Piezo.hpp"
 #include <EasyTransfer.h>
+#include <i2c_driver.h>
+#include <i2c_driver_wire.h> 
 #include "Swing.hpp"
 #include "SensorFusion.h"
 #include "Mahony.hpp"

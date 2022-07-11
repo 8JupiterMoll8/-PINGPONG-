@@ -25,20 +25,18 @@ public:
 	{
 		if (!radio.begin())
 		{
-			if (channel == 121)
-				Serial.println(F(" LEFT Reciver -121 is not responding!!"));
-			if (channel == 125)
-				Serial.println(F(" RIGHT Reciver-125 is not responding!!"));
-			while (1)
-			{
-			}
+			if (channel == 121) Serial.println(F(" LEFT Reciver -121 is not responding!!"));
+			if (channel == 125) Serial.println(F(" RIGHT Reciver-125 is not responding!!"));
+
+			//while (1)
+			//{
+			//	Serial.println("EROOR");
+			//}
 		}
 		else
 		{
-			if (channel == 121)
-				Serial.println(F(" LEFT Reciver  -121 running !!"));
-			if (channel == 125)
-				Serial.println(F(" RIGHT Reciver -125 running !!"));
+			if (channel == 121) Serial.println(F(" LEFT Reciver  -121 running !!"));
+			if (channel == 125) Serial.println(F(" RIGHT Reciver -125 running !!"));
 		}
 
 		radio.setChannel(channel);

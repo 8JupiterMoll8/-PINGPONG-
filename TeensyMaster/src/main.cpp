@@ -11,6 +11,7 @@
 EasyTransfer ET;
 ETSENDATA mydata;
 
+
 /*
 ██╗     ██╗ ██████╗ ██╗  ██╗████████╗
 ██║     ██║██╔════╝ ██║  ██║╚══██╔══╝
@@ -39,17 +40,17 @@ void cylon(void);
 
 // RF2- Reciver
 const uint64_t lr_ADRESS{0xF0F0F0F0D2LL};
-const byte lr_CHANNEL{121};
-const byte lr_CE_PIN{21};
-const byte lr_CSN_PIN{20};
+const byte lr_CHANNEL {121};
+const byte lr_CE_PIN  {28};
+const byte lr_CSN_PIN {29};
 
 RF24 lr_radio(lr_CE_PIN, lr_CSN_PIN);
 ReciverData lr_rf24SensorData;
 Reciver lr_RF24_Reciver(lr_radio, lr_ADRESS, lr_CHANNEL, lr_rf24SensorData);
 
 // HIT Behaviour
-const int LR_PIEZO_THERSHOLD_MIN{5};
-const int LR_PIEZO_PEAKTRACK_MILLIS{3};
+const int LR_PIEZO_THERSHOLD_MIN     {5};
+const int LR_PIEZO_PEAKTRACK_MILLIS  {3};
 const int LR_PIEZO_AFTERSCHOCK_MILLIS{25};
 
 PeakDetector lr_PiezoDetector(LR_PIEZO_THERSHOLD_MIN, LR_PIEZO_PEAKTRACK_MILLIS, LR_PIEZO_AFTERSCHOCK_MILLIS);
@@ -86,8 +87,8 @@ CometRaw lr_cometRaw(LedStrip);
 // RF24 RECIVER
 const uint64_t rr_ADRESS{0xF0F0F0F0E1LL};
 const byte rr_CHANNEL{125};
-const byte rr_CE_PIN{16};
-const byte rr_CSN_PIN{15};
+const byte rr_CE_PIN {37};
+const byte rr_CSN_PIN{38};
 
 RF24 rr_radio(rr_CE_PIN, rr_CSN_PIN);
 ReciverData rr_rf24SensorData;
@@ -131,7 +132,7 @@ CometRaw rr_cometRaw(LedStrip);
 
 
 /*PIEZO*/
-const int LT_PIEZO_PIN{A10};
+const int LT_PIEZO_PIN{A17};
 const int LT_PIEZO_THERSHOLD_MIN{30};
 const int LT_PIEZO_PEAKTRACK_MILLIS{12};
 const int LT_PIEZO_AFTERSCHOCK_MILLIS{20};
@@ -143,6 +144,18 @@ Counter lt_PiezoCounter;
 Piezo lt_Piezo(lt_PiezoDetector, lt_PiezoCounter, lt_PiezoInput);
 Table leftTable(lt_Piezo);
 
+
+/*
+███╗   ██╗███████╗████████╗
+████╗  ██║██╔════╝╚══██╔══╝
+██╔██╗ ██║█████╗     ██║   
+██║╚██╗██║██╔══╝     ██║   
+██║ ╚████║███████╗   ██║   
+╚═╝  ╚═══╝╚══════╝   ╚═╝   
+*/                    
+const int NET_PIEZO_PIN{A16};
+
+
 /*
 ██████╗ ██╗ ██████╗ ██╗  ██╗████████╗    ████████╗ █████╗ ██████╗ ██╗     ███████╗
 ██╔══██╗██║██╔════╝ ██║  ██║╚══██╔══╝    ╚══██╔══╝██╔══██╗██╔══██╗██║     ██╔════╝
@@ -153,7 +166,7 @@ Table leftTable(lt_Piezo);
  */
 
 /*PIEZO*/
-const int RT_PIEZO_PIN{A11};
+const int RT_PIEZO_PIN{A15};
 const int RT_PIEZO_THERSHOLD_MIN{10};
 const int RT_PIEZO_PEAKTRACK_MILLIS{3};
 const int RT_PIEZO_AFTERSCHOCK_MILLIS{15}; //! This has to be fixed
@@ -210,12 +223,15 @@ BallWechselCounter ballwechselCounter(rightRacket, leftRacket, leftTable, rightT
 void setup() {
     // Init Serial
     Serial.begin(115200);
-    Serial1.begin(115200);
+    Serial1.begin(3000000);
     while (!Serial) {}
 
     // Int Easy Transfer
     ET.begin(details(mydata), &Serial1);
-
+  
+    Wire2.begin();
+  
+   
     // Init WS2182B
     byte dataPin = 26;
     byte clockPin = 27;
@@ -270,6 +286,9 @@ void loop() {
     inputHandler.loop();
 
 
+   //leftRacket.print();
+   //Serial.println(leftRacket.speed());
+
 // GAME_MANEGER_FOR_AUFSCHLAG_UND_BALLWECHSEL
     //  ballwechselCounter.loop();
     //  ballwechselCounter.getTotalBallwechsel();
@@ -280,7 +299,7 @@ void loop() {
 
 // EASY_TRANSFER SEND DATA TO THE LIGHT BULB System
     mydata.leftRacketHit = leftRacket.isHit();
-    mydata.leftRacketSpeed = 1001;
+    mydata.leftRacketSpeed = leftRacket.speed();
     mydata.leftTableHit = leftTable.isHit();
 
     mydata.rightRacketHit = rightRacket.isHit();
@@ -288,6 +307,7 @@ void loop() {
     mydata.rightTableHit = rightTable.isHit();
 
     ET.sendData();
+  
 
 // End Loop
 }

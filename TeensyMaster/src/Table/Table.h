@@ -6,16 +6,16 @@ class Table
 {
 
 private:
-Piezo &_piezo;
+Piezo &piezo_;
 
 public:
-    Table(Piezo &piezo):_piezo(piezo)
+    Table(Piezo &piezo):piezo_(piezo)
 	{}
 
-    auto loop()        {        _piezo.loop();        }
-    auto resetHitSum() {        _piezo.resetHitSum(); }
-    auto hitPeak()    { return _piezo.hitPeak();     }
-    auto isHit()  { return _piezo.isHit();       }
-	auto hitSum()     { return _piezo.hitSum();      }
+    auto loop()        {        piezo_.loop();        }
+    auto resetHitSum() {        piezo_.resetHitSum(); }
+    auto hitPeak()    { return piezo_.hitPeak();     }
+    auto isHit()  { return piezo_.isHit();       }
+	auto hitSum()     { return piezo_.hitSum();      }
 };
 #endif

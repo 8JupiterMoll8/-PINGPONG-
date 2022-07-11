@@ -11,7 +11,7 @@
 class Racket {
 private:
     //Hit Behaviour
-    Piezo &_piezo;
+    Piezo &piezo_;
     //Motion Behaviour
     Speed &_speed;
     Swing &_swing;
@@ -22,7 +22,7 @@ private:
 
 public:
     Racket(Piezo &piezo, Speed &speed, Swing &swing, Mahony &mahony, Pressure &pressure) :
-            _piezo(piezo),
+            piezo_(piezo),
             _speed(speed),
             _swing(swing),
             _mahony(mahony),
@@ -32,7 +32,7 @@ public:
 
     // LOOP
     auto loop() {
-        _piezo.loop();
+        piezo_.loop();
         _swing.loop();
         _speed.loop();
         _mahony.loop();
@@ -49,13 +49,13 @@ public:
     auto swing_B_Gain() { return _swing.B_Gain(); }
 
     //HIT
-    auto isHit() { return _piezo.isHit(); }
+    auto isHit() { return piezo_.isHit(); }
 
-    auto hitPeak() { return _piezo.hitPeak(); }
+    auto hitPeak() { return piezo_.hitPeak(); }
 
-    auto hitSum() { return _piezo.hitSum(); }
+    auto hitSum() { return piezo_.hitSum(); }
 
-    auto resetHitSum() { _piezo.resetHitSum(); }
+    auto resetHitSum() { piezo_.resetHitSum(); }
 
     //ROLL PITCH YAW
     auto roll() { return _mahony.roll(); }
@@ -66,6 +66,16 @@ public:
 
     //PRESSURE BUTTON
     auto pressure() { return m_pressure.value(); }
+
+    // Debug ()
+
+    auto print ()
+      {
+        if(piezo_.isHit()){
+            Serial.println( piezo_.hitSum());
+        }
+
+      }
 
 };
 
