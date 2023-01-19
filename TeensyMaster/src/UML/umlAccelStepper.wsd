@@ -1,0 +1,57 @@
+@startuml
+scale 2
+AccelStepper  <|--aAxis
+AccelStepper  <|--yAxis
+AccelStepper  <|--xAxis
+
+xAxis  *-- MoveBehaviour 
+yAxis  *-- MoveBehaviour
+aAxis  *-- MoveBehaviour
+MoveBehaviour <|-- MoveTickTack
+MoveBehaviour <|-- MoveConstant
+MoveBehaviour <|-- MoveRandomly
+
+usbMidi *-- MoveTickTack
+usbMidi *-- MoveConstant
+usbMidi *-- MoveRandomly
+
+  class clock{}
+
+
+TimeScore --*  KnightRider
+TimeScore --*  clock
+TimeScore --*  GameState
+
+
+
+
+
+
+ 
+ clock -* MoveBehaviour
+
+
+
+
+class clock
+{
+
+}
+
+class Light
+{
+
+}
+
+class KnightRider
+{
+
+}
+
+interface MoveBehaviour
+{
+
+}
+
+
+@enduml

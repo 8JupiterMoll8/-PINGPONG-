@@ -1,0 +1,24 @@
+{
+	"folders": [
+		{
+			"path": "TeensyAcLight"
+		},
+		{
+			"path": "TeensyMaster"
+		},
+		{
+			"path": "TeensyMotor"
+		},
+		{
+			"path": "Ic2_recive"
+		},
+		{
+			"path": "Ic2_SEND"
+		},
+		{
+			"name": "Observer Pattern",
+			"path": "../../Documents/PlatformIO/Projects/Observer Pattern"
+		}
+	],
+	"settings": {}
+}
