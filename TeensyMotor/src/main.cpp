@@ -3,6 +3,7 @@
 #include "LeftClock.h"
 #include "IMoveBehaviour.h"
 #include "MoveTickTack.h"
+#include "MoveRandomly.h"
 
 #include <EasyTransfer.h>
 #include <Wire.h>
@@ -44,9 +45,15 @@ void receive(int numBytes);
 ╚██████╗███████╗╚██████╔╝╚██████╗██║  ██╗
  ╚═════╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝
 */  
-                                   
-LeftClock leftClock(30,34);
-LeftClock rightClock(31,32);
+AccelStepper leftStepper(1,31,32);
+AccelStepper rightStepper(1,30,34);                              
+LeftClock leftClock(leftStepper);
+LeftClock rightClock(rightStepper);
+
+MoveRandomly moveRandomly(leftStepper);
+
+IMoveBehaviour *moveBehaviour  = &moveRandomly;
+
 elapsedMillis ms;
 boolean toogleMoveBehaviour = false;
 
@@ -67,8 +74,9 @@ void setup() {
 
 
 
-leftClock.setupMoveBehaviour();
-rightClock.setupMoveBehaviour();
+
+leftClock.setup();
+
 
 
 }
@@ -76,6 +84,7 @@ rightClock.setupMoveBehaviour();
 void loop() 
 {
 
+leftClock.loop();
 
 
 
@@ -83,30 +92,34 @@ void loop()
 
 
 
-  if (ET_Ic2.receiveData())
-{
+
+
+
+
+//   if (ET_Ic2.receiveData())
+// {
     
-  Serial.println(mydata.leftRacketSpeed);
-  if (mydata.rightTableHit == 1)
-    Serial.println("HitRighTable ");
+//   Serial.println(mydata.leftRacketSpeed);
+//   if (mydata.rightTableHit == 1)
+//     Serial.println("HitRighTable ");
 
-  if (mydata.leftTableHit == 1)
-    Serial.println("HitLefttTable ");
+//   if (mydata.leftTableHit == 1)
+//     Serial.println("HitLefttTable ");
 
-  if (mydata.rightRacketHit == 1)
-  {
-    static int count = 0;
-    Serial.print("HitRightRacket : ");
-    Serial.println(count++);
-  }
+//   if (mydata.rightRacketHit == 1)
+//   {
+//     static int count = 0;
+//     Serial.print("HitRightRacket : ");
+//     Serial.println(count++);
+//   }
 
-  if (mydata.leftRacketHit == 1)
-  {
-    static int count = 0;
-    Serial.print("HitLeftRacket : ");
-    Serial.println(count++);
-  }
-}
+//   if (mydata.leftRacketHit == 1)
+//   {
+//     static int count = 0;
+//     Serial.print("HitLeftRacket : ");
+//     Serial.println(count++);
+//   }
+// }
 
 // if (ET.receiveData())
 // {

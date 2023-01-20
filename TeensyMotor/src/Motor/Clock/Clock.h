@@ -10,25 +10,26 @@ class Clock
 {
 public:
 
-
-int m_pinStep;
-int m_pinDir;  
- //Move Behaviour
-AccelStepper stepper;
+AccelStepper    m_stepper;
 IMoveBehaviour *moveBehaviour;
+
+IMoveBehaviour *moveConstant;
+IMoveBehaviour *moveRandom;
+IMoveBehaviour *moveTickTack;
+
 
     
 public:
 // Constructor
-    Clock(int pinStep, int pinDir) : 
-    m_pinStep {pinStep},
-    m_pinDir  {pinDir},
-    stepper  (1, m_pinStep, m_pinDir),
-    moveBehaviour(0)
+    Clock(AccelStepper stepper) : 
+    m_stepper{stepper},
+    moveBehaviour{0}
+  
     {
+      
     }       
 
-    
+
     void setupMoveBehaviour()
     {     
         this->moveBehaviour->setup();       
