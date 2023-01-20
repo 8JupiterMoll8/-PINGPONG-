@@ -4,6 +4,7 @@
 #include "IMoveBehaviour.h"
 #include "MoveTickTack.h"
 #include "MoveRandomly.h"
+#include "MoveConstant.h"
 
 #include <EasyTransfer.h>
 #include <Wire.h>
@@ -45,14 +46,15 @@ void receive(int numBytes);
 ╚██████╗███████╗╚██████╔╝╚██████╗██║  ██╗
  ╚═════╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝
 */  
+
 AccelStepper leftStepper(1,31,32);
-AccelStepper rightStepper(1,30,34);                              
-LeftClock leftClock(leftStepper);
-LeftClock rightClock(rightStepper);
+//AccelStepper rightStepper(1,30,34);                              
+//LeftClock leftClock(leftStepper);
+//LeftClock rightClock(rightStepper);
+Clock clock(leftStepper);
 
-MoveRandomly moveRandomly(leftStepper);
+MoveConstant moveConstant(leftStepper);
 
-IMoveBehaviour *moveBehaviour  = &moveRandomly;
 
 elapsedMillis ms;
 boolean toogleMoveBehaviour = false;
@@ -66,16 +68,18 @@ void setup() {
 //    {  
 //     Serial.println("TEENSY-MOTOR");
 //  }
- // ET.begin(details(mydata), &Serial1);
+    ET.begin(details(mydata), &Serial1);
 
-    Wire2.begin(9);
+   // Wire2.begin(9);
     ET_Ic2.begin(details(mydata), &Wire2);   
-    Wire2.onReceive(receive);
+    //Wire2.onReceive(receive);
 
 
 
 
-leftClock.setup();
+//leftClock.setup();
+clock.setupMoveBehaviour();
+
 
 
 
@@ -83,17 +87,10 @@ leftClock.setup();
 
 void loop() 
 {
-
-leftClock.loop();
-
-
-
-
-
-
-
-
-
+  clock.setSpeedMoveBehavoiur(1000);
+  clock.setMoveBehaviour(&moveConstant);
+  clock.executeMoveBehaviour();
+//leftClock.loop();
 
 
 //   if (ET_Ic2.receiveData())
@@ -121,30 +118,31 @@ leftClock.loop();
 //   }
 // }
 
-// if (ET.receiveData())
-// {
-    
-//   Serial.println(mydata.leftRacketSpeed);
-//   if (mydata.rightTableHit == 1)
-//     Serial.println("HitRighTable ");
+if (ET.receiveData())
+{   
+  //Serial.println(mydata.leftRacketSpeed);
 
-//   if (mydata.leftTableHit == 1)
-//     Serial.println("HitLefttTable ");
+  if (mydata.rightTableHit == 1) Serial.println("HitRighTable ");
+  if (mydata.leftTableHit == 1)  Serial.println("HitLefttTable ");
 
-//   if (mydata.rightRacketHit == 1)
-//   {
-//     static int count = 0;
-//     Serial.print("HitRightRacket : ");
-//     Serial.println(count++);
-//   }
 
-//   if (mydata.leftRacketHit == 1)
-//   {
-//     static int count = 0;
-//     Serial.print("HitLeftRacket : ");
-//     Serial.println(count++);
-//   }
-// }
+  if (mydata.rightRacketHit == 1)
+  {
+    static int count = 0;
+    Serial.print("HitRightRacket : ");
+    Serial.println(count++);
+  }
+
+
+  if (mydata.leftRacketHit == 1)
+  {
+    static int count = 0;
+    Serial.print("HitLeftRacket : ");
+    Serial.println(count++);
+  }
+
+
+}
 }
 
 void receive(int numBytes) {}

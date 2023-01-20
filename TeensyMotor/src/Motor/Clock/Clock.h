@@ -11,6 +11,7 @@ class Clock
 public:
 
 AccelStepper    m_stepper;
+
 IMoveBehaviour *moveBehaviour;
 
 IMoveBehaviour *moveConstant;

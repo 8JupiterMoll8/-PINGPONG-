@@ -19,7 +19,7 @@ public:
     StepperMotor.setSpeed(m_speed);
     StepperMotor.runSpeed();
     //Zeiger.runNow();
-    Serial.println("MoveConstant");
+    //Serial.println("MoveConstant");
   
   }
 

@@ -52,7 +52,7 @@ class LeftClock : public Clock {
 
     if(toogle == true) {
       setSpeedMoveBehavoiur(1000);
-      setMoveBehaviour(moveTickTack);
+      setMoveBehaviour(moveConstant);
     }
 
       executeMoveBehaviour();

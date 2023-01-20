@@ -228,11 +228,11 @@ void setup() {
     // Init Serial
     Serial.begin(115200);
     Serial1.begin(3000000);
-    while (!Serial) {}
+   // while (!Serial) {}
     Serial.println("Hallo Ping Pong");
 
   // **Int Easy Transfer
-  // ET.begin(details(mydata), &Serial1);
+    ET.begin(details(mydata), &Serial1);
     Wire2.begin();
   
    
@@ -337,7 +337,7 @@ FastLED.show();
     mydata.rightRacketSpeed = rightRacket.speed();
     mydata.rightTableHit = rightTable.isHit();
 
-   //ET.sendData();
+    ET.sendData();
   
 
 // End Loop
