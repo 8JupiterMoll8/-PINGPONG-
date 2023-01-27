@@ -330,12 +330,13 @@ FastLED.show();
 
 // EASY_TRANSFER SEND DATA TO THE LIGHT BULB System
     mydata.leftRacketHit = leftRacket.isHit();
-    mydata.leftRacketSpeed = leftRacket.speed();
+    mydata.leftRacketSpeed = leftRacket.roll();
     mydata.leftTableHit = leftTable.isHit();
 
     mydata.rightRacketHit = rightRacket.isHit();
     mydata.rightRacketSpeed = rightRacket.speed();
     mydata.rightTableHit = rightTable.isHit();
+
 
     ET.sendData();
   

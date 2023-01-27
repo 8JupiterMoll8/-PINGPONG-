@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "AccelStepper.h"
 #include "LeftClock.h"
+#include "Clocker.h"
 #include "IMoveBehaviour.h"
 #include "MoveTickTack.h"
 #include "MoveRandomly.h"
@@ -47,17 +48,33 @@ void receive(int numBytes);
  ╚═════╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝
 */  
 
+// AccelStepper leftStepper(1,31,32);
+// AccelStepper rightStepper(1,30,34);                              
+// LeftClock leftClock(leftStepper);
+// LeftClock rightClock(rightStepper);
+
+
 AccelStepper leftStepper(1,31,32);
-//AccelStepper rightStepper(1,30,34);                              
-//LeftClock leftClock(leftStepper);
-//LeftClock rightClock(rightStepper);
 Clock clock(leftStepper);
-
 MoveConstant moveConstant(leftStepper);
+int currentRoll;
 
 
-elapsedMillis ms;
-boolean toogleMoveBehaviour = false;
+// Clocker leftClocker;
+// AccelStepper leftStepper(1,31,32);
+// MoveConstant moveConstant(leftStepper);
+// MoveTickTack moveTickTack(leftStepper);
+// MoveRandomly moveRandom(leftStepper);
+
+// Clocker rightClocker;
+// AccelStepper rightStepper(1,30,34);                                                      
+// MoveConstant left_moveConstant(rightStepper);
+// MoveTickTack left_moveTickTack(rightStepper);
+// MoveRandomly left_moveRandom(rightStepper);
+
+
+
+
 
 //RightClock rightClock;
 
@@ -68,17 +85,21 @@ void setup() {
 //    {  
 //     Serial.println("TEENSY-MOTOR");
 //  }
+
+
     ET.begin(details(mydata), &Serial1);
 
-   // Wire2.begin(9);
-    ET_Ic2.begin(details(mydata), &Wire2);   
+    // Wire2.begin(9);
+    //ET_Ic2.begin(details(mydata), &Wire2);   
     //Wire2.onReceive(receive);
 
 
 
-
-//leftClock.setup();
-clock.setupMoveBehaviour();
+ //leftClock.setup();
+ //rightClock.setup();
+ 
+ clock.setMoveBehaviour(&moveConstant);
+ clock.setupMoveBehaviour();
 
 
 
@@ -87,10 +108,25 @@ clock.setupMoveBehaviour();
 
 void loop() 
 {
-  clock.setSpeedMoveBehavoiur(1000);
-  clock.setMoveBehaviour(&moveConstant);
+
+   //!TH
+  //  leftClocker.setMoveBehaviour(&moveConstant); // Init has to before setup
+  //  leftClocker.setupMoveBehaviour();
+  //  leftClocker.setSpeedMoveBehavoiur(1000);
+  //  leftClocker.executeMoveBehaviour();
+
+  //  rightClocker.setMoveBehaviour(&left_moveConstant); // Init has to before setup
+  //  rightClocker.setupMoveBehaviour();
+  //  rightClocker.setSpeedMoveBehavoiur(500);
+  //  rightClocker.executeMoveBehaviour();
+
+
+  
+  //leftClock.loop();
+  //rightClock.loop();
+
+  clock.setSpeedMoveBehavoiur(currentRoll);
   clock.executeMoveBehaviour();
-//leftClock.loop();
 
 
 //   if (ET_Ic2.receiveData())
@@ -120,7 +156,14 @@ void loop()
 
 if (ET.receiveData())
 {   
-  //Serial.println(mydata.leftRacketSpeed);
+  static int previousRoll = 0;
+  currentRoll = map(mydata.leftRacketSpeed,-180.0, 180.0, 0, 9000);
+
+ if (currentRoll != previousRoll) {
+      //  Serial.println(currentRoll);
+        previousRoll = currentRoll;
+ }
+ 
 
   if (mydata.rightTableHit == 1) Serial.println("HitRighTable ");
   if (mydata.leftTableHit == 1)  Serial.println("HitLefttTable ");
@@ -146,3 +189,4 @@ if (ET.receiveData())
 }
 
 void receive(int numBytes) {}
+void clientClocker(){}

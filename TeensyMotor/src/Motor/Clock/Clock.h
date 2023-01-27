@@ -8,7 +8,7 @@
 
 class Clock
 {
-public:
+protected:
 
 AccelStepper    m_stepper;
 

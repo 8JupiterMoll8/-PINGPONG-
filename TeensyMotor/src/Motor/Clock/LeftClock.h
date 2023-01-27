@@ -30,6 +30,9 @@ class LeftClock : public Clock {
 
   void setup(){
     setupMoveBehaviour();
+    // m_stepper.setMaxSpeed(12800);
+    // m_stepper.setSpeed(10000); // had to slow for my motor
+    // m_stepper.setAcceleration(100.0);
   
   }
 
@@ -46,7 +49,7 @@ class LeftClock : public Clock {
    
     
     if(toogle ==false) {
-      setSpeedMoveBehavoiur(5000);
+      setSpeedMoveBehavoiur(500);
       setMoveBehaviour(moveConstant);
       }
 
