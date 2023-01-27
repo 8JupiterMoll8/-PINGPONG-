@@ -1,8 +1,8 @@
 #include <Arduino.h>
-#//include "TimerOne.h"
-//#include "Birnen.hpp"
-//#include "KnightRider.h"
-//#include "FadeAll.h"
+ //#include <TimerOne.h>
+ //#include "Birnen.hpp"
+// #include "KnightRider.h"
+// #include "FadeAll.h"
 
 #include <EasyTransfer.h>
 
@@ -16,21 +16,21 @@
                                                                                                     
 */
 
-EasyTransfer ET_Light;
+EasyTransfer ET_Motor;
 struct ET_ReciverData
 {
+   uint32_t leftRacketSpeed;
+   uint32_t rightRacketSpeed;
    uint8_t  rightRacketHit;
    uint8_t  leftRacketHit;
    uint8_t  leftTableHit;
    uint8_t  rightTableHit;
-   float leftRacketSpeed;
-   float rightRacketSpeed;
 };
 
 //give a name to the group of data
 ET_ReciverData mydata;
 
-int currentRoll;
+
 
 
 /*
@@ -50,20 +50,20 @@ int currentRoll;
 
 
 void setup() {
-  Serial.begin(3000000);
-  Serial8.begin(6000000);
+  Serial.begin(115200);
+  Serial8.begin(115200);
   while(!Serial)
   {
 
   }
-  ET_Light.begin(details(mydata), &Serial8);
+  ET_Motor.begin(details(mydata), &Serial8);
 
   // INIT AC BULBS 240V PHASE CONTROLLER
   //setup_Dimmer();
   Serial.println("AC DIMMER 2");
   
-pinMode(22,OUTPUT);
 
+  //lz_moveConstant.setup();
 
 }
 
@@ -83,31 +83,20 @@ void loop()
 
 
 
-if (ET_Light.receiveData())
-{   
-  static int previousRoll = 0;
-  currentRoll = map(mydata.leftRacketSpeed,-180.0, 180.0, 0, 9000);
+if (ET_Motor.receiveData())
+{
 
- if (currentRoll != previousRoll) {
-     // Serial.println(currentRoll);
-        previousRoll = currentRoll;
- }
- 
+  if (mydata.rightTableHit == 1)
+    Serial.println("HitRighTable ");
 
-  if (mydata.rightTableHit == 1) Serial.println("HitRighTable ");
-  if (mydata.leftTableHit == 1)  Serial.println("HitLefttTable ");
-
+  if (mydata.leftTableHit == 1)
+    Serial.println("HitLefttTable ");
 
   if (mydata.rightRacketHit == 1)
   {
     static int count = 0;
     Serial.print("HitRightRacket : ");
     Serial.println(count++);
-   
-     digitalWrite(22,HIGH);
-     delay(10);
-  }else{
-    digitalWrite(22,LOW);
   }
 
   if (mydata.leftRacketHit == 1)
@@ -115,10 +104,7 @@ if (ET_Light.receiveData())
     static int count = 0;
     Serial.print("HitLeftRacket : ");
     Serial.println(count++);
-     
   }
-
-
 }
 
 

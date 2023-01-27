@@ -8,7 +8,10 @@
 ██╔══╝  ██╔══██║╚════██║  ╚██╔╝     ██║   ██╔══██╗██╔══██║██║╚██╗██║╚════██║██╔══╝  ██╔══╝  ██╔══██╗
 ███████╗██║  ██║███████║   ██║      ██║   ██║  ██║██║  ██║██║ ╚████║███████║██║     ███████╗██║  ██║
 ╚══════╝╚═╝  ╚═╝╚══════╝   ╚═╝      ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚═╝     ╚══════╝╚═╝  ╚═╝*/
-EasyTransfer ET;
+EasyTransfer ET_Motor;
+EasyTransfer ET_Light;
+
+
 ETSENDATA mydata;
 
 
@@ -227,13 +230,19 @@ BallWechselCounter ballwechselCounter(rightRacket, leftRacket, leftTable, rightT
 void setup() {
     // Init Serial
     Serial.begin(115200);
-    Serial1.begin(3000000);
+    Serial1.begin(6000000);
+    Serial8.begin(6000000);
+
    // while (!Serial) {}
     Serial.println("Hallo Ping Pong");
 
   // **Int Easy Transfer
-    ET.begin(details(mydata), &Serial1);
-    Wire2.begin();
+    ET_Motor.begin(details(mydata), &Serial1);
+    ET_Light.begin(details(mydata), &Serial8);
+
+  
+  //** IC2 TRANSFER
+   // Wire2.begin();
   
    
     // **Init WS2182B
@@ -338,7 +347,8 @@ FastLED.show();
     mydata.rightTableHit = rightTable.isHit();
 
 
-    ET.sendData();
+    ET_Motor.sendData();
+    ET_Light.sendData();
   
 
 // End Loop

@@ -2,9 +2,10 @@
 #define BIRNEN_H
 #pragma once
 //#include <TimerOne.h>
-#include "Arduino.h"
+//#include "Arduino.h"
+//#include <TimerThree.h>
+//#include "IntervalTimer.h"
 
-elapsedMillis ms;
 
 void zero_crosss_int();
 void timerIsr();
@@ -38,8 +39,8 @@ void setup_Dimmer()
 
   pinMode(2, INPUT_PULLUP);
   attachInterrupt(2, zero_crosss_int, FALLING);
-  Timer1.initialize(100); // set a timer of length 100 microseconds for 50Hz or 83 microseconds for 60Hz;
-  Timer1.attachInterrupt( timerIsr ); // attach the service routine here
+  Timer3.initialize(100); // set a timer of length 100 microseconds for 50Hz or 83 microseconds for 60Hz;
+  Timer3.attachInterrupt( timerIsr ); // attach the service routine here
  
 
 

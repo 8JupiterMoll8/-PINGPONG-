@@ -8,7 +8,7 @@
 class Clocker
 {
 private: IMoveBehaviour *moveBehaviour;
-
+                                                                                                    
     
 public: Clocker() : moveBehaviour{0}{}       
 

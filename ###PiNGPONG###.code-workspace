@@ -18,6 +18,10 @@
 		{
 			"name": "Observer Pattern",
 			"path": "../../Documents/PlatformIO/Projects/Observer Pattern"
+		},
+		{
+			"name": "TeensyLIght",
+			"path": "TeensyLIght"
 		}
 	],
 	"settings": {}

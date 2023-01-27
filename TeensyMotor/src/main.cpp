@@ -21,7 +21,8 @@
                                                                                                     
 */
 
-EasyTransfer ET;
+EasyTransfer ET_Motor;
+
 struct ET_ReciverData
 {
  
@@ -80,14 +81,14 @@ int currentRoll;
 
 void setup() {
   Serial.begin(115200);
-  Serial1.begin(3000000);    // EasyTransfer
+  Serial1.begin(6000000);    // EasyTransfer
 //   while(!Serial )
 //    {  
 //     Serial.println("TEENSY-MOTOR");
 //  }
 
 
-    ET.begin(details(mydata), &Serial1);
+    ET_Motor.begin(details(mydata), &Serial1);
 
     // Wire2.begin(9);
     //ET_Ic2.begin(details(mydata), &Wire2);   
@@ -154,7 +155,7 @@ void loop()
 //   }
 // }
 
-if (ET.receiveData())
+if (ET_Motor.receiveData())
 {   
   static int previousRoll = 0;
   currentRoll = map(mydata.leftRacketSpeed,-180.0, 180.0, 0, 9000);
