@@ -137,19 +137,33 @@ void ofApp::updateLedSimulation() {
 }
 
 void ofApp::processSerialData() {
-    while (serial.available() > 0) {
-        unsigned char ch = serial.readByte();
+    int bytesRead = 0;
+    int framesParsedThisUpdate = 0;
+    
+    // Read at most 2048 bytes per frame to prevent infinite loops if serial stream is continuous
+    while (serial.available() > 0 && bytesRead < 2048) {
+        int chInt = serial.readByte();
+        if (chInt == OF_SERIAL_ERROR || chInt == OF_SERIAL_NO_DATA) {
+            break;
+        }
+        bytesRead++;
+        unsigned char ch = (unsigned char)chInt;
+
         if (ch == '\n' || ch == '\r') {
             if (!serialBuffer.empty()) {
                 if (serialBuffer.rfind("PP:", 0) == 0) {
-                    string jsonStr = serialBuffer.substr(3);
-                    parseTelemetryJson(jsonStr);
+                    // Limit JSON parsing to at most 5 newest packets per frame to prevent high RAM churn
+                    if (framesParsedThisUpdate < 5) {
+                        string jsonStr = serialBuffer.substr(3);
+                        parseTelemetryJson(jsonStr);
+                        framesParsedThisUpdate++;
+                    }
                 }
                 serialBuffer.clear();
             }
         } else {
             serialBuffer += (char)ch;
-            if (serialBuffer.length() > 4096) {
+            if (serialBuffer.length() > 2048) {
                 serialBuffer.clear();
             }
         }
