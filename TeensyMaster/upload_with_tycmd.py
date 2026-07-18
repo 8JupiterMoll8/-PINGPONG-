@@ -1,7 +1,7 @@
 Import("env")
 
 env.Replace(
-    UPLOADER="tycmd",
+    UPLOADER="$PROJECT_DIR/tycmd",
     UPLOADCMD="$UPLOADER upload $UPLOADERFLAGS $SOURCE"
 )
 
