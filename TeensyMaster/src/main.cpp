@@ -19,6 +19,8 @@ constexpr uint32_t webTelemetryIntervalMs{20}; // 50 Hz — snappier webui respo
 constexpr int webTelemetryMinimumWriteBytes{1024}; // Drop diagnostics rather than wait on USB
 constexpr uint32_t racketFreshTimeoutMs{250};
 elapsedMillis webTelemetryTimer;
+constexpr uint32_t ledFrameIntervalMs{8}; // 120 FPS maximum rate for FastLED
+elapsedMillis ledFrameTimer;
 WebTelemetry webTelemetry{Serial};
 
 void sendWorldFrame();
@@ -352,7 +354,11 @@ void loop() {
  inputHandler.loop();
 
 
-FastLED.show();
+// Rate limit FastLED to 120 FPS so SPI bus and CPU stay free for 30kHz radio & piezo polling
+if (ledFrameTimer >= ledFrameIntervalMs) {
+    ledFrameTimer = 0;
+    FastLED.show();
+}
 
 
 //
