@@ -1,10 +1,11 @@
 #include <Arduino.h>
-#//include "TimerOne.h"
+//#include "TimerOne.h"
 //#include "Birnen.hpp"
 //#include "KnightRider.h"
 //#include "FadeAll.h"
 
 #include <EasyTransfer.h>
+#include "PingPongProtocol.h"
 
 /*
 ███████╗ █████╗ ███████╗██╗   ██╗████████╗██████╗  █████╗ ███╗   ██╗███████╗███████╗███████╗██████╗ 
@@ -17,20 +18,21 @@
 */
 
 EasyTransfer ET_Light;
-struct ET_ReciverData
-{
-   uint8_t  rightRacketHit;
-   uint8_t  leftRacketHit;
-   uint8_t  leftTableHit;
-   uint8_t  rightTableHit;
-   float leftRacketSpeed;
-   float rightRacketSpeed;
-};
+pingpong::WorldFrame worldFrame{};
 
-//give a name to the group of data
-ET_ReciverData mydata;
-
-int currentRoll;
+constexpr uint8_t rightRacketHitPin{22};
+constexpr uint32_t communicationTimeoutMs{500};
+constexpr uint32_t hitPulseMs{10};
+uint32_t lastValidFrameMs{0};
+uint32_t hitPulseStartedMs{0};
+uint16_t lastFrameSequence{0};
+uint8_t lastLeftRacketHitCount{0};
+uint8_t lastRightRacketHitCount{0};
+uint8_t lastLeftTableHitCount{0};
+uint8_t lastRightTableHitCount{0};
+int currentRoll{0};
+bool hasValidFrame{false};
+bool hitPulseActive{false};
 
 
 /*
@@ -52,17 +54,14 @@ int currentRoll;
 void setup() {
   Serial.begin(3000000);
   Serial8.begin(6000000);
-  while(!Serial)
-  {
-
-  }
-  ET_Light.begin(details(mydata), &Serial8);
+  ET_Light.begin(details(worldFrame), &Serial8);
 
   // INIT AC BULBS 240V PHASE CONTROLLER
   //setup_Dimmer();
   Serial.println("AC DIMMER 2");
   
-pinMode(22,OUTPUT);
+  pinMode(rightRacketHitPin, OUTPUT);
+  digitalWrite(rightRacketHitPin, LOW);
 
 
 }
@@ -83,43 +82,54 @@ void loop()
 
 
 
-if (ET_Light.receiveData())
-{   
-  static int previousRoll = 0;
-  currentRoll = map(mydata.leftRacketSpeed,-180.0, 180.0, 0, 9000);
+  const uint32_t now = millis();
+  if (ET_Light.receiveData()
+      && pingpong::isCompatible(worldFrame)
+      && (!hasValidFrame || worldFrame.frameSequence != lastFrameSequence)) {
+    const bool rightRacketHit = hasValidFrame && worldFrame.rightRacketHitCount != lastRightRacketHitCount;
+#ifdef PINGPONG_LINK_DEBUG
+    const bool leftRacketHit = hasValidFrame && worldFrame.leftRacketHitCount != lastLeftRacketHitCount;
+    const bool leftTableHit = hasValidFrame && worldFrame.leftTableHitCount != lastLeftTableHitCount;
+    const bool rightTableHit = hasValidFrame && worldFrame.rightTableHitCount != lastRightTableHitCount;
+#endif
 
- if (currentRoll != previousRoll) {
-     // Serial.println(currentRoll);
-        previousRoll = currentRoll;
- }
- 
+    hasValidFrame = true;
+    lastValidFrameMs = now;
+    lastFrameSequence = worldFrame.frameSequence;
+    lastLeftRacketHitCount = worldFrame.leftRacketHitCount;
+    lastRightRacketHitCount = worldFrame.rightRacketHitCount;
+    lastLeftTableHitCount = worldFrame.leftTableHitCount;
+    lastRightTableHitCount = worldFrame.rightTableHitCount;
 
-  if (mydata.rightTableHit == 1) Serial.println("HitRighTable ");
-  if (mydata.leftTableHit == 1)  Serial.println("HitLefttTable ");
+    const float roll = constrain(worldFrame.leftRacketRoll, -180.0F, 180.0F);
+    currentRoll = static_cast<int>((roll + 180.0F) * 9000.0F / 360.0F);
 
+    if (pingpong::isRunning(worldFrame) && rightRacketHit) {
+      digitalWrite(rightRacketHitPin, HIGH);
+      hitPulseStartedMs = now;
+      hitPulseActive = true;
+    }
 
-  if (mydata.rightRacketHit == 1)
-  {
-    static int count = 0;
-    Serial.print("HitRightRacket : ");
-    Serial.println(count++);
-   
-     digitalWrite(22,HIGH);
-     delay(10);
-  }else{
-    digitalWrite(22,LOW);
+#ifdef PINGPONG_LINK_DEBUG
+    if (rightTableHit) Serial.println("HitRightTable");
+    if (leftTableHit) Serial.println("HitLeftTable");
+    if (rightRacketHit) Serial.println("HitRightRacket");
+    if (leftRacketHit) Serial.println("HitLeftRacket");
+#endif
   }
 
-  if (mydata.leftRacketHit == 1)
-  {
-    static int count = 0;
-    Serial.print("HitLeftRacket : ");
-    Serial.println(count++);
-     
+  if (hitPulseActive && now - hitPulseStartedMs >= hitPulseMs) {
+    digitalWrite(rightRacketHitPin, LOW);
+    hitPulseActive = false;
   }
 
-
-}
+  const bool communicationTimedOut = !hasValidFrame || now - lastValidFrameMs >= communicationTimeoutMs;
+  if (communicationTimedOut || !pingpong::isRunning(worldFrame)) {
+    currentRoll = 0;
+    digitalWrite(rightRacketHitPin, LOW);
+    hitPulseActive = false;
+    hasValidFrame = false;
+  }
 
 
 

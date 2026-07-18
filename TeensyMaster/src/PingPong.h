@@ -10,6 +10,7 @@
 #include "RF24.h"
 #include "Reciver.hpp"
 #include "ReciverData.hpp"
+#include "DualReceiverManager.hpp"
 #include "PeaKDetector.hpp"
 #include "ResponsiveAnalogRead.h"
 #include "Counter.hpp"
@@ -31,7 +32,8 @@
 #include "Bargraph.h"
 #include "CometRaw.h"
 #include <EasyTransfer.h>
-#include "ETSENDATA.h"
+#include "PingPongProtocol.h"
+#include "WebTelemetry.hpp"
 #include "CollisionDetector.h"
 #include "InputHandler.h"
 //#include "Input.h"

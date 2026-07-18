@@ -21,6 +21,7 @@ void  setup_RF24L01(byte Channel){
   radio.setPayloadSize(sizeof(sensorData)); // float datatype occupies 4 bytes
   radio.setAutoAck(false);
   radio.setDataRate(RF24_2MBPS);
+  radio.setCRCLength(RF24_CRC_16);
   radio.openWritingPipe(adress);     
 
 

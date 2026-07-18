@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#090b10" />
+    <title>PINGPONG — Relationship Mirror</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-left" aria-hidden="true"></div>
+    <div class="ambient ambient-right" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <div class="identity">
+        <span class="eyebrow">PINGPONG / DIAGNOSTIC INSTRUMENT</span>
+        <h1>Relationship Mirror</h1>
+      </div>
+
+      <div class="connection-cluster">
+        <div class="connection-state" role="status" aria-live="polite">
+          <span id="connection-dot" class="status-dot"></span>
+          <span>
+            <strong id="connection-label">Not connected</strong>
+            <small id="frame-age">Waiting for a frame</small>
+          </span>
+        </div>
+        <div class="actions">
+          <button id="connect-btn" class="button button-primary" type="button">Connect Master</button>
+          <button id="demo-btn" class="button" type="button">Explore Demo</button>
+          <button id="disconnect-btn" class="button button-quiet" type="button" disabled>Disconnect</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="safety-strip">
+      <span id="mode-badge" class="mode-badge">READ-ONLY</span>
+      <p>This screen observes the installation. TeensyMaster remains the only game brain.</p>
+      <span>Telemetry <strong id="sequence-value">—</strong></span>
+    </div>
+
+    <main>
+      <section class="overview-grid" aria-label="Live game overview">
+        <article class="panel mirror-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="section-kicker">LIVE BODY</span>
+              <h2>The shared field</h2>
+            </div>
+            <div class="health-pair">
+              <span id="left-radio-pill" class="health-pill">L racket —</span>
+              <span id="right-radio-pill" class="health-pill">R racket —</span>
+            </div>
+          </div>
+
+          <div id="court" class="court">
+            <div class="court-lines" aria-hidden="true"></div>
+            <div class="court-net" aria-hidden="true"></div>
+
+            <button class="hit-pad table-pad left-table" data-source="leftTable" type="button" tabindex="-1">
+              <span>LEFT TABLE</span>
+              <strong id="left-table-hits">0</strong>
+            </button>
+            <button class="hit-pad table-pad net-table" data-source="netTable" type="button" tabindex="-1">
+              <span>NET</span>
+              <strong id="net-table-hits">0</strong>
+              <small id="net-table-peak" class="net-peak">peak —</small>
+            </button>
+            <button class="hit-pad table-pad right-table" data-source="rightTable" type="button" tabindex="-1">
+              <span>RIGHT TABLE</span>
+              <strong id="right-table-hits">0</strong>
+            </button>
+
+            <div id="left-player" class="player player-left">
+              <div class="racket-mini" aria-hidden="true"></div>
+              <button class="hit-pad racket-pad" data-source="leftRacket" type="button" tabindex="-1">
+                <span>LEFT LOVER</span>
+                <strong id="left-racket-hits">0</strong>
+              </button>
+            </div>
+
+            <div id="right-player" class="player player-right">
+              <div class="racket-mini" aria-hidden="true"></div>
+              <button class="hit-pad racket-pad" data-source="rightRacket" type="button" tabindex="-1">
+                <span>RIGHT LOVER</span>
+                <strong id="right-racket-hits">0</strong>
+              </button>
+            </div>
+
+            <div id="relationship-core" class="relationship-core" aria-label="Shared relationship body">
+              <div class="core-orbit orbit-one"></div>
+              <div class="core-orbit orbit-two"></div>
+              <div class="core-heart">∞</div>
+              <span>SHARED BODY</span>
+            </div>
+
+            <div id="ball" class="ball" aria-hidden="true"></div>
+          </div>
+
+          <div class="court-caption">
+            <span><i class="legend-dot legend-left"></i> Left melody</span>
+            <span><i class="legend-dot legend-shared"></i> Relationship</span>
+            <span><i class="legend-dot legend-right"></i> Right melody</span>
+          </div>
+        </article>
+
+        <aside class="overview-side">
+          <article class="panel game-panel">
+            <div class="panel-heading compact">
+              <div>
+                <span class="section-kicker">REFEREE</span>
+                <h2>Game state</h2>
+              </div>
+              <span id="engine-badge" class="small-badge pending">PENDING</span>
+            </div>
+
+            <div class="game-state-primary">
+              <span>Phase</span>
+              <strong id="phase-value">Sensor test</strong>
+            </div>
+            <div class="game-facts">
+              <div><span>Expected next</span><strong id="expected-value">—</strong></div>
+              <div><span>Rally</span><strong id="rally-value">0</strong></div>
+            </div>
+            <p id="engine-note" class="note">The new referee is not active yet. Live sensor truth is shown below.</p>
+          </article>
+
+          <article class="panel level-panel">
+            <div class="panel-heading compact">
+              <div>
+                <span class="section-kicker">RELATIONSHIP</span>
+                <h2>Connection level</h2>
+              </div>
+              <strong id="level-value" class="level-number">0</strong>
+            </div>
+            <div class="level-track" aria-label="Connection level 0 to 5">
+              <div id="level-fill" class="level-fill"></div>
+              <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+            </div>
+            <strong id="level-copy" class="chapter-name">Distance</strong>
+            <div class="progress-row">
+              <span>Next chapter</span>
+              <span id="progress-value">0%</span>
+            </div>
+            <div class="progress-track"><div id="progress-fill" class="progress-fill"></div></div>
+          </article>
+        </aside>
+      </section>
+
+      <section class="led-strip-section section-block" aria-labelledby="led-strip-heading">
+        <article class="panel led-strip-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="section-kicker">MITTELLINIE / CENTER LINE</span>
+              <h2 id="led-strip-heading">LED strip — 58 LEDs</h2>
+            </div>
+            <div class="led-strip-legend">
+              <span class="led-legend-dot" style="background:#ef5a71"></span><span>Left hit</span>
+              <span class="led-legend-dot" style="background:#54d6c6"></span><span>Right hit</span>
+              <span class="led-legend-dot" style="background:#c8c8ff"></span><span>Net</span>
+            </div>
+          </div>
+          <div class="led-strip-wrap">
+            <span class="led-end-label">LED 0</span>
+            <canvas id="led-strip-canvas" class="led-strip-canvas" aria-label="Simulated LED strip comet animation"></canvas>
+            <span class="led-end-label">LED 57</span>
+          </div>
+          <p class="note">Browser simulation driven by telemetry hit events — mirrors the physical SK9822 strip on the table net. Left-racket hit fires a pink comet from LED 57 → 0; right-racket fires teal from 0 → 57; net hit flashes white.</p>
+        </article>
+      </section>
+
+      <section class="section-block" aria-labelledby="sensor-heading">
+        <div class="section-heading">
+          <div>
+            <span class="section-kicker">THE SENSES</span>
+            <h2 id="sensor-heading">Racket telemetry</h2>
+          </div>
+          <p>Raw motion, interpreted orientation, grip pressure and radio health.</p>
+        </div>
+
+        <div class="racket-grid">
+          <article class="panel racket-card left-card" data-racket="left">
+            <div class="racket-header">
+              <div>
+                <span class="player-index">01</span>
+                <h3>Left lover</h3>
+              </div>
+              <span id="left-radio" class="health-pill">Radio —</span>
+            </div>
+
+            <div class="racket-main">
+              <div class="orientation-stage">
+                <div id="left-racket-visual" class="racket-visual left-racket-visual" aria-hidden="true">
+                  <div class="racket-face"></div><div class="racket-handle"></div>
+                </div>
+                <span>ORIENTATION</span>
+              </div>
+              <div class="orientation-values">
+                <div><span>Roll</span><strong id="left-roll">0°</strong></div>
+                <div><span>Pitch</span><strong id="left-pitch">0°</strong></div>
+                <div><span>Yaw</span><strong id="left-yaw">0°</strong></div>
+              </div>
+            </div>
+
+            <div class="bar-metric">
+              <div><span>Grip pressure</span><strong id="left-pressure">0</strong></div>
+              <div class="metric-track"><div id="left-pressure-bar" class="metric-fill pressure-fill"></div></div>
+            </div>
+            <div class="bar-metric">
+              <div><span>Swing speed</span><strong id="left-speed">0</strong></div>
+              <div class="metric-track"><div id="left-speed-bar" class="metric-fill speed-fill"></div></div>
+            </div>
+
+            <div class="raw-grid">
+              <div><span>GX</span><strong id="left-gx">0</strong></div>
+              <div><span>GY</span><strong id="left-gy">0</strong></div>
+              <div><span>GZ</span><strong id="left-gz">0</strong></div>
+              <div><span>AX</span><strong id="left-ax">0</strong></div>
+              <div><span>AY</span><strong id="left-ay">0</strong></div>
+              <div><span>AZ</span><strong id="left-az">0</strong></div>
+            </div>
+
+            <div class="radio-footer">
+              <span><strong id="left-pps">0</strong> packets/s</span>
+              <span>age <strong id="left-age">—</strong></span>
+              <span>piezo <strong id="left-piezo">0</strong></span>
+              <span>peak <strong id="left-peak">0</strong></span>
+            </div>
+          </article>
+
+          <article class="panel racket-card right-card" data-racket="right">
+            <div class="racket-header">
+              <div>
+                <span class="player-index">02</span>
+                <h3>Right lover</h3>
+              </div>
+              <span id="right-radio" class="health-pill">Radio —</span>
+            </div>
+
+            <div class="racket-main">
+              <div class="orientation-stage">
+                <div id="right-racket-visual" class="racket-visual right-racket-visual" aria-hidden="true">
+                  <div class="racket-face"></div><div class="racket-handle"></div>
+                </div>
+                <span>ORIENTATION</span>
+              </div>
+              <div class="orientation-values">
+                <div><span>Roll</span><strong id="right-roll">0°</strong></div>
+                <div><span>Pitch</span><strong id="right-pitch">0°</strong></div>
+                <div><span>Yaw</span><strong id="right-yaw">0°</strong></div>
+              </div>
+            </div>
+
+            <div class="bar-metric">
+              <div><span>Grip pressure</span><strong id="right-pressure">0</strong></div>
+              <div class="metric-track"><div id="right-pressure-bar" class="metric-fill pressure-fill"></div></div>
+            </div>
+            <div class="bar-metric">
+              <div><span>Swing speed</span><strong id="right-speed">0</strong></div>
+              <div class="metric-track"><div id="right-speed-bar" class="metric-fill speed-fill"></div></div>
+            </div>
+
+            <div class="raw-grid">
+              <div><span>GX</span><strong id="right-gx">0</strong></div>
+              <div><span>GY</span><strong id="right-gy">0</strong></div>
+              <div><span>GZ</span><strong id="right-gz">0</strong></div>
+              <div><span>AX</span><strong id="right-ax">0</strong></div>
+              <div><span>AY</span><strong id="right-ay">0</strong></div>
+              <div><span>AZ</span><strong id="right-az">0</strong></div>
+            </div>
+
+            <div class="radio-footer">
+              <span><strong id="right-pps">0</strong> packets/s</span>
+              <span>age <strong id="right-age">—</strong></span>
+              <span>piezo <strong id="right-piezo">0</strong></span>
+              <span>peak <strong id="right-peak">0</strong></span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="diagnostics-grid section-block" aria-label="Output and signal diagnostics">
+        <article class="panel outputs-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="section-kicker">PERFORMERS</span>
+              <h2>Output mirror</h2>
+            </div>
+            <span class="small-badge">COMMANDS</span>
+          </div>
+
+          <div class="output-grid">
+            <div class="output-instrument motor-instrument">
+              <div id="motor-dial" class="motor-dial"><span></span></div>
+              <div><span>Motor target</span><strong id="motor-value">0</strong><small>steps / second</small></div>
+            </div>
+            <div class="output-instrument light-instrument">
+              <div id="light-orb" class="light-orb"></div>
+              <div><span>AC-light trigger</span><strong id="light-value">Waiting</strong><small>right-racket pulse</small></div>
+            </div>
+            <div class="output-instrument sound-instrument">
+              <div class="wave-icon"><i></i><i></i><i></i><i></i><i></i></div>
+              <div><span>Sound renderer</span><strong id="sound-value">Legacy MIDI</strong><small>PlugData mapping next</small></div>
+            </div>
+          </div>
+          <p class="note">These are commands sent by Master. Motor and light feedback sensors can be added later for physical confirmation.</p>
+        </article>
+
+        <article class="panel chart-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="section-kicker">LAST 6 SECONDS</span>
+              <h2>Motion and touch</h2>
+            </div>
+            <div class="chart-legend">
+              <span class="chart-left">L speed</span><span class="chart-right">R speed</span>
+            </div>
+          </div>
+          <canvas id="signal-chart" aria-label="Live racket motion graph"></canvas>
+        </article>
+
+        <article class="panel event-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="section-kicker">MEMORY</span>
+              <h2>Contact timeline</h2>
+            </div>
+            <button id="clear-events-btn" class="text-button" type="button">Clear</button>
+          </div>
+          <ol id="event-list" class="event-list">
+            <li class="event-empty">Hits will appear here.</li>
+          </ol>
+        </article>
+      </section>
+
+      <section class="section-block rules-section" aria-labelledby="rules-heading">
+        <div class="section-heading">
+          <div>
+            <span class="section-kicker">THE SCORE</span>
+            <h2 id="rules-heading">Rules visible to everyone</h2>
+          </div>
+          <p>The dashboard will highlight the expected next contact when GameEngine becomes active.</p>
+        </div>
+        <div class="rules-grid">
+          <article class="rule-card">
+            <span class="rule-number">01</span>
+            <h3>Left serve</h3>
+            <p><b>Left racket</b><i>→</i> left table <i>→</i> right table <i>→</i> right racket</p>
+          </article>
+          <article class="rule-card">
+            <span class="rule-number">02</span>
+            <h3>Right serve</h3>
+            <p><b>Right racket</b><i>→</i> right table <i>→</i> left table <i>→</i> left racket</p>
+          </article>
+          <article class="rule-card">
+            <span class="rule-number">03</span>
+            <h3>Rally</h3>
+            <p>Every legal exchange slows the shared world and reveals the two melodies.</p>
+          </article>
+          <article class="rule-card">
+            <span class="rule-number">04</span>
+            <h3>Mistake</h3>
+            <p>A player mistake ends the rally and moves the relationship one level back—not to zero.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>PINGPONG / two lovers learning to hear one another</span>
+      <span id="protocol-value">Telemetry protocol v—</span>
+    </footer>
+
+    <script type="module" src="./app.mjs"></script>
+  </body>
+</html>

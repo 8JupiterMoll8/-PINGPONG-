@@ -6,6 +6,7 @@
 #include "MoveTickTack.h"
 #include "MoveRandomly.h"
 #include "MoveConstant.h"
+#include "PingPongProtocol.h"
 
 #include <EasyTransfer.h>
 #include <Wire.h>
@@ -22,22 +23,19 @@
 */
 
 EasyTransfer ET_Motor;
-
-struct ET_ReciverData
-{
- 
-   uint8_t  rightRacketHit;
-   uint8_t  leftRacketHit;
-   uint8_t  leftTableHit;
-   uint8_t  rightTableHit;
-   float leftRacketSpeed;
-   float rightRacketSpeed;
-};
-
-//give a name to the group of data
-ET_ReciverData mydata;
+pingpong::WorldFrame worldFrame{};
 EasyTransferI2C ET_Ic2; 
 void receive(int numBytes);
+
+constexpr uint32_t communicationTimeoutMs{500};
+constexpr int maximumMotorSpeed{9000};
+uint32_t lastValidFrameMs{0};
+uint16_t lastFrameSequence{0};
+uint8_t lastLeftRacketHitCount{0};
+uint8_t lastRightRacketHitCount{0};
+uint8_t lastLeftTableHitCount{0};
+uint8_t lastRightTableHitCount{0};
+bool hasValidFrame{false};
 
 
 /*
@@ -56,9 +54,9 @@ void receive(int numBytes);
 
 
 AccelStepper leftStepper(1,31,32);
-Clock clock(leftStepper);
+Clock motorClock(leftStepper);
 MoveConstant moveConstant(leftStepper);
-int currentRoll;
+int currentRoll{0};
 
 
 // Clocker leftClocker;
@@ -88,7 +86,7 @@ void setup() {
 //  }
 
 
-    ET_Motor.begin(details(mydata), &Serial1);
+    ET_Motor.begin(details(worldFrame), &Serial1);
 
     // Wire2.begin(9);
     //ET_Ic2.begin(details(mydata), &Wire2);   
@@ -99,8 +97,8 @@ void setup() {
  //leftClock.setup();
  //rightClock.setup();
  
- clock.setMoveBehaviour(&moveConstant);
- clock.setupMoveBehaviour();
+ motorClock.setMoveBehaviour(&moveConstant);
+ motorClock.setupMoveBehaviour();
 
 
 
@@ -125,10 +123,6 @@ void loop()
   
   //leftClock.loop();
   //rightClock.loop();
-
-  clock.setSpeedMoveBehavoiur(currentRoll);
-  clock.executeMoveBehaviour();
-
 
 //   if (ET_Ic2.receiveData())
 // {
@@ -155,38 +149,47 @@ void loop()
 //   }
 // }
 
-if (ET_Motor.receiveData())
-{   
-  static int previousRoll = 0;
-  currentRoll = map(mydata.leftRacketSpeed,-180.0, 180.0, 0, 9000);
+  const uint32_t now = millis();
+  if (ET_Motor.receiveData()
+      && pingpong::isCompatible(worldFrame)
+      && (!hasValidFrame || worldFrame.frameSequence != lastFrameSequence)) {
+#ifdef PINGPONG_LINK_DEBUG
+    const bool leftRacketHit = hasValidFrame && worldFrame.leftRacketHitCount != lastLeftRacketHitCount;
+    const bool rightRacketHit = hasValidFrame && worldFrame.rightRacketHitCount != lastRightRacketHitCount;
+    const bool leftTableHit = hasValidFrame && worldFrame.leftTableHitCount != lastLeftTableHitCount;
+    const bool rightTableHit = hasValidFrame && worldFrame.rightTableHitCount != lastRightTableHitCount;
+#endif
 
- if (currentRoll != previousRoll) {
-      //  Serial.println(currentRoll);
-        previousRoll = currentRoll;
- }
- 
+    hasValidFrame = true;
+    lastValidFrameMs = now;
+    lastFrameSequence = worldFrame.frameSequence;
+    lastLeftRacketHitCount = worldFrame.leftRacketHitCount;
+    lastRightRacketHitCount = worldFrame.rightRacketHitCount;
+    lastLeftTableHitCount = worldFrame.leftTableHitCount;
+    lastRightTableHitCount = worldFrame.rightTableHitCount;
 
-  if (mydata.rightTableHit == 1) Serial.println("HitRighTable ");
-  if (mydata.leftTableHit == 1)  Serial.println("HitLefttTable ");
+    if (pingpong::isRunning(worldFrame)) {
+      const float roll = constrain(worldFrame.leftRacketRoll, -180.0F, 180.0F);
+      currentRoll = static_cast<int>((roll + 180.0F) * maximumMotorSpeed / 360.0F);
+      currentRoll = constrain(currentRoll, 0, maximumMotorSpeed);
+    }
 
-
-  if (mydata.rightRacketHit == 1)
-  {
-    static int count = 0;
-    Serial.print("HitRightRacket : ");
-    Serial.println(count++);
+#ifdef PINGPONG_LINK_DEBUG
+    if (rightTableHit) Serial.println("HitRightTable");
+    if (leftTableHit) Serial.println("HitLeftTable");
+    if (rightRacketHit) Serial.println("HitRightRacket");
+    if (leftRacketHit) Serial.println("HitLeftRacket");
+#endif
   }
 
-
-  if (mydata.leftRacketHit == 1)
-  {
-    static int count = 0;
-    Serial.print("HitLeftRacket : ");
-    Serial.println(count++);
+  const bool communicationTimedOut = !hasValidFrame || now - lastValidFrameMs >= communicationTimeoutMs;
+  if (communicationTimedOut || !pingpong::isRunning(worldFrame)) {
+    currentRoll = 0;
+    hasValidFrame = false;
   }
 
-
-}
+  motorClock.setSpeedMoveBehavoiur(currentRoll);
+  motorClock.executeMoveBehaviour();
 }
 
 void receive(int numBytes) {}

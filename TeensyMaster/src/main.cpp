@@ -11,8 +11,19 @@
 EasyTransfer ET_Motor;
 EasyTransfer ET_Light;
 
+pingpong::WorldFrame worldFrame{};
 
-ETSENDATA mydata;
+constexpr uint32_t outputFrameIntervalMs{10}; // 100 Hz for remote renderers
+elapsedMillis outputFrameTimer;
+constexpr uint32_t webTelemetryIntervalMs{20}; // 50 Hz — snappier webui response
+constexpr int webTelemetryMinimumWriteBytes{1024}; // Drop diagnostics rather than wait on USB
+constexpr uint32_t racketFreshTimeoutMs{250};
+elapsedMillis webTelemetryTimer;
+WebTelemetry webTelemetry{Serial};
+
+void sendWorldFrame();
+void sendWebTelemetry();
+void fillRacketTelemetry(RacketTelemetry& telemetry, Racket& racket, const ReciverData& rawData);
 
 
 /*
@@ -127,6 +138,12 @@ Bargraph rr_bargraph(LedStrip);
 // AudioVisual Behaviour for Swing after Ballcontact
 CometRaw rr_cometRaw(LedStrip);
 
+// Dual Receiver Manager — keeps both NRF24 receivers listening continuously
+DualReceiverManager dualReceiverManager(
+    lr_RF24_Reciver, rr_RF24_Reciver,
+    lr_CSN_PIN, rr_CSN_PIN // Dedicated chip-select pin for each receiver
+); // Both radios share MOSI, MISO, and SCK
+
 
 /*
 ██╗     ███████╗███████╗████████╗    ████████╗ █████╗ ██████╗ ██╗     ███████╗
@@ -159,8 +176,18 @@ Table leftTable(lt_Piezo);
 ██║╚██╗██║██╔══╝     ██║   
 ██║ ╚████║███████╗   ██║   
 ╚═╝  ╚═══╝╚══════╝   ╚═╝   
-*/                    
+*/
 const int NET_PIEZO_PIN{A16};
+const int NT_PIEZO_THERSHOLD_MIN{20};
+const int NT_PIEZO_PEAKTRACK_MILLIS{8};
+const int NT_PIEZO_AFTERSCHOCK_MILLIS{20};
+
+PeakDetector nt_PiezoDetector(NT_PIEZO_THERSHOLD_MIN, NT_PIEZO_PEAKTRACK_MILLIS, NT_PIEZO_AFTERSCHOCK_MILLIS);
+ResponsiveAnalogRead nt_PiezoSmoother(NET_PIEZO_PIN, false);
+InputSensorSmooth nt_PiezoInput(nt_PiezoSmoother);
+Counter nt_PiezoCounter;
+Piezo nt_Piezo(nt_PiezoDetector, nt_PiezoCounter, nt_PiezoInput);
+Table netTable(nt_Piezo);
 
 
 /*
@@ -237,8 +264,8 @@ void setup() {
     Serial.println("Hallo Ping Pong");
 
   // **Int Easy Transfer
-    ET_Motor.begin(details(mydata), &Serial1);
-    ET_Light.begin(details(mydata), &Serial8);
+    ET_Motor.begin(details(worldFrame), &Serial1);
+    ET_Light.begin(details(worldFrame), &Serial8);
 
   
   //** IC2 TRANSFER
@@ -255,19 +282,9 @@ void setup() {
     LEDS.setBrightness(25);
 
 
-    // Init RF24 Reciver
-    pinMode(lr_CE_PIN, OUTPUT);
-    pinMode(lr_CSN_PIN, OUTPUT);
-    pinMode(rr_CE_PIN, OUTPUT);
-    pinMode(rr_CSN_PIN, OUTPUT);
-
-    digitalWrite(lr_CSN_PIN, HIGH);
-    digitalWrite(rr_CSN_PIN, LOW);
-    rr_RF24_Reciver.setup();
-    delay(100);//TODO STRANGE THIS HAPPENS IF DELAYTIME IS SET WRONG  LEFt RAcket is not Recognized
-    digitalWrite(rr_CSN_PIN, HIGH);
-    digitalWrite(lr_CSN_PIN, LOW);
-    lr_RF24_Reciver.setup();
+    // Initialize both RF24 receivers on their shared SPI bus.
+    // Each radio stays in listening mode continuously.
+    dualReceiverManager.setup(); // Reports a warning if either radio fails
 
 
 
@@ -287,6 +304,7 @@ for (int i = 0; i < 58; i++)
   delay(10);
 }
 
+    worldFrame.systemStatus = static_cast<uint8_t>(pingpong::SystemStatus::running);
 
     // Shut OFF LED STRIP
    // FastLED.clear();
@@ -301,25 +319,34 @@ for (int i = 0; i < 58; i++)
 ███████╗╚██████╔╝╚██████╔╝██║     ╚██╗██╔╝
 ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝      ╚═╝╚═╝
  */
+#ifdef PINGPONG_RF24_STATS
+elapsedMillis debugStatsTimer;
+#endif
+
 void loop() {
 //delay(1);      // !! FOR DEBUGGING SERIAL PLotter
 
-//LEFT RACKET
-   digitalWrite(rr_CSN_PIN, HIGH); // turn OFF rr_RF24_Reciver
-   digitalWrite(lr_CSN_PIN, LOW); // turn on lr_RF24_Reciver
-   lr_RF24_Reciver.loop();
-   leftRacket.loop();
-//RIGHT RACKET
-  digitalWrite(lr_CSN_PIN, HIGH); // turn OFF lr_RF24_Reciver
-  digitalWrite(rr_CSN_PIN, LOW); 
-  rr_RF24_Reciver.loop();
+// RF24 RECEIVERS — poll both and retain each racket's newest sample
+  dualReceiverManager.loop();
+  leftRacket.loop();
   rightRacket.loop();
 
- //LEft TABLE 
-  rightTable.loop();
+#ifdef PINGPONG_RF24_STATS
+  if (debugStatsTimer >= 1000) {
+    debugStatsTimer = 0;
+    dualReceiverManager.printStats();
+    dualReceiverManager.resetStats();
+  }
+#endif
+
+//LEFT TABLE
+  leftTable.loop();
 
 //RIGHT TABLE
-  leftTable.loop();
+  rightTable.loop();
+
+//NET TABLE
+  netTable.loop();
 
 //COMMANDS 
  inputHandler.loop();
@@ -330,34 +357,105 @@ FastLED.show();
 
 //
 // GAME_MANEGER_FOR_AUFSCHLAG_UND_BALLWECHSEL
-   // ballwechselCounter.loop();
-   // ballwechselCounter.getTotalBallwechsel();
-   // ballwechselCounter.printDebug();
+   ballwechselCounter.loop();
+   ballwechselCounter.printDebug();
 
 // Collison Detector 
 //collisionDetector.isCollision();
 
-// EASY_TRANSFER SEND DATA TO THE LIGHT BULB System
-    mydata.leftRacketHit = leftRacket.isHit();
-    mydata.leftRacketSpeed = leftRacket.roll();
-    mydata.leftTableHit = leftTable.isHit();
-
-    mydata.rightRacketHit = rightRacket.isHit();
-    mydata.rightRacketSpeed = rightRacket.speed();
-    mydata.rightTableHit = rightTable.isHit();
-
-
-    ET_Motor.sendData();
-    ET_Light.sendData();
+    sendWorldFrame();
+    sendWebTelemetry();
   
 
 // End Loop
 }
 
+void sendWorldFrame()
+{
+    if (outputFrameTimer < outputFrameIntervalMs) {
+        return;
+    }
 
+    outputFrameTimer = 0;
+    ++worldFrame.frameSequence;
+    worldFrame.leftRacketRoll = leftRacket.roll();
+    worldFrame.rightRacketSpeed = rightRacket.speed();
+    worldFrame.leftRacketHitCount = static_cast<uint8_t>(leftRacket.hitSum());
+    worldFrame.rightRacketHitCount = static_cast<uint8_t>(rightRacket.hitSum());
+    worldFrame.leftTableHitCount = static_cast<uint8_t>(leftTable.hitSum());
+    worldFrame.rightTableHitCount = static_cast<uint8_t>(rightTable.hitSum());
 
+    ET_Motor.sendData();
+    ET_Light.sendData();
+}
 
+void sendWebTelemetry()
+{
+    if (webTelemetryTimer < webTelemetryIntervalMs
+        || !Serial
+        || Serial.availableForWrite() < webTelemetryMinimumWriteBytes) {
+        return;
+    }
 
+    webTelemetryTimer = 0;
 
+    WebTelemetryFrame telemetry{};
+    telemetry.timestampMs = millis();
+    telemetry.frameSequence = worldFrame.frameSequence;
+    telemetry.systemStatus = worldFrame.systemStatus;
 
+    telemetry.radio.leftPackets = dualReceiverManager.getLeftPackets();
+    telemetry.radio.rightPackets = dualReceiverManager.getRightPackets();
+    telemetry.radio.leftAgeMs = dualReceiverManager.getLeftPacketAgeMs();
+    telemetry.radio.rightAgeMs = dualReceiverManager.getRightPacketAgeMs();
+    telemetry.radio.leftFresh = dualReceiverManager.isLeftFresh(racketFreshTimeoutMs);
+    telemetry.radio.rightFresh = dualReceiverManager.isRightFresh(racketFreshTimeoutMs);
 
+    fillRacketTelemetry(telemetry.left, leftRacket, lr_rf24SensorData);
+    fillRacketTelemetry(telemetry.right, rightRacket, rr_rf24SensorData);
+
+    telemetry.table.leftHitCount = static_cast<uint8_t>(leftTable.hitSum());
+    telemetry.table.rightHitCount = static_cast<uint8_t>(rightTable.hitSum());
+    telemetry.table.netHitCount = static_cast<uint8_t>(netTable.hitSum());
+    telemetry.table.leftHitPeak = leftTable.hitSum() > 0
+        ? static_cast<uint8_t>(constrain(leftTable.hitPeak(), 0, 127))
+        : 0;
+    telemetry.table.rightHitPeak = rightTable.hitSum() > 0
+        ? static_cast<uint8_t>(constrain(rightTable.hitPeak(), 0, 127))
+        : 0;
+    telemetry.table.netHitPeak = netTable.hitSum() > 0
+        ? static_cast<uint8_t>(constrain(netTable.hitPeak(), 0, 127))
+        : 0;
+
+    telemetry.game.phase         = ballwechselCounter.getPhase();
+    telemetry.game.expectedInput = ballwechselCounter.getExpectedInput();
+    telemetry.game.rallyCount    = ballwechselCounter.getRallyCount();
+
+    const float constrainedRoll = constrain(worldFrame.leftRacketRoll, -180.0F, 180.0F);
+    telemetry.outputs.motorTarget = static_cast<int32_t>((constrainedRoll + 180.0F) * 9000.0F / 360.0F);
+    telemetry.outputs.lightPulseCount = worldFrame.rightRacketHitCount;
+
+    webTelemetry.send(telemetry);
+}
+
+void fillRacketTelemetry(RacketTelemetry& telemetry, Racket& racket, const ReciverData& rawData)
+{
+    telemetry.gx = rawData.gx;
+    telemetry.gy = rawData.gy;
+    telemetry.gz = rawData.gz;
+    telemetry.ax = rawData.ax;
+    telemetry.ay = rawData.ay;
+    telemetry.az = rawData.az;
+    telemetry.piezo = rawData.pz;
+    telemetry.pressure = racket.pressure();
+    telemetry.roll = racket.roll();
+    telemetry.pitch = racket.pitch();
+    telemetry.yaw = racket.yaw();
+    telemetry.speed = racket.speed();
+
+    const int hitCount = racket.hitSum();
+    telemetry.hitCount = static_cast<uint8_t>(hitCount);
+    telemetry.hitPeak = hitCount > 0
+        ? static_cast<uint8_t>(constrain(racket.hitPeak(), 0, 127))
+        : 0;
+}

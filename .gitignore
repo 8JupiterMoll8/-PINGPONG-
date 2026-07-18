@@ -1,0 +1,23 @@
+# Build directories & objects
+.pio/
+obj/
+bin/
+*.o
+*.d
+*.so
+*.a
+*.dylib
+*.dll
+*.exe
+
+# IDE & Config
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Specific build artifacts
+ofVisualizer/bin/ofVisualizer
+ofVisualizer/bin/libfmod.so
